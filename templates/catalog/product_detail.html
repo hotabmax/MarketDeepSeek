@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}{{ product.name }} — {{ site.name }}{% endblock %}
+{% block description %}{{ product.description|default:product.name|truncatechars:155 }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'catalog:list' %}">Каталог</a>
+        <span aria-hidden="true">/</span>
+        <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ product.name }}</span>
+    </nav>
+
+    <div class="product">
+        <div class="product__media" style="--media-bg: {{ product.category.color }}">
+            {% if product.has_discount %}
+                <span class="badge badge--sale">−{{ product.discount_percent }}%</span>
+            {% endif %}
+            {% if product.image_url %}
+                <img class="product__photo" src="{{ product.image_url }}" alt="{{ product.name }}"
+                     onerror="this.remove()">
+            {% endif %}
+            <span class="product__emoji" aria-hidden="true">{{ product.emoji }}</span>
+        </div>
+
+        <div class="product__info">
+            <a class="product__category" href="{{ product.category.get_absolute_url }}">
+                {{ product.category.icon }} {{ product.category.name }}
+            </a>
+            <h1 class="product__title">{{ product.name }}</h1>
+            <p class="product__desc">{{ product.description|default:"Свежий продукт из проверенных поставщиков." }}</p>
+
+            <div class="product__price">
+                <span class="product__price-current">{{ product.price|money }}</span>
+                {% if product.has_discount %}<s class="product__price-old">{{ product.old_price|money }}</s>{% endif %}
+                <span class="product__unit">/ {{ product.unit }}</span>
+            </div>
+
+            <p class="product__stock{% if not product.in_stock %} product__stock--out{% endif %}">
+                {% if product.in_stock %}
+                    <span aria-hidden="true">●</span> В наличии: {{ product.stock }} {{ product.stock_unit }}
+                {% else %}
+                    <span aria-hidden="true">●</span> Сейчас нет в наличии
+                {% endif %}
+            </p>
+
+            {% if product.in_stock %}
+            <form class="product__buy" method="post" action="{% url 'cart:add' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.pk }}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <div class="stepper stepper--lg">
+                    <button type="button" class="stepper__btn" data-step="-1" aria-label="Уменьшить количество">−</button>
+                    <input class="qty-input" type="number" name="quantity" id="id_quantity"
+                           value="{{ add_form.quantity.value|default:1 }}" min="1" max="{{ product.stock }}"
+                           inputmode="numeric" aria-label="Количество">
+                    <button type="button" class="stepper__btn" data-step="1" aria-label="Увеличить количество">+</button>
+                </div>
+                <button class="btn btn--primary btn--lg" type="submit">Добавить в корзину</button>
+            </form>
+            {% else %}
+            <p class="product__out">Мы уже пополняем запас — загляните чуть позже.</p>
+            {% endif %}
+
+            <ul class="product__benefits">
+                <li><span aria-hidden="true">🚚</span> Доставка за 2 часа, бесплатно от {{ site.free_delivery_from|money }}</li>
+                <li><span aria-hidden="true">🧊</span> Привозим в термосумках — сохраняем свежесть</li>
+                <li><span aria-hidden="true">↩️</span> Возврат в течение 24 часов после доставки</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+{% if related_products %}
+<section class="container section">
+    <div class="section__head">
+        <h2 class="section__title">Похожие товары</h2>
+        <a class="section__link" href="{{ product.category.get_absolute_url }}">Все в «{{ product.category.name }}» →</a>
+    </div>
+    <div class="product-grid">
+        {% for product in related_products %}
+            {% include "includes/product_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

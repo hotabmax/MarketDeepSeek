@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}Заказ {{ order.number }} — {{ site.name }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'catalog:list' %}">Каталог</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'orders:track' %}">Отслеживание заказа</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ order.number }}</span>
+    </nav>
+
+    <div class="track-head">
+        <div>
+            <span class="track-head__label">Заказ</span>
+            <h1 class="page-title track-head__number">{{ order.number }}</h1>
+            <p class="track-head__meta">
+                Оформлен {{ order.created_at|date:"j E Y, H:i" }} ·
+                {{ order.get_delivery_method_display }}
+                {% if order.delivery_slot %} · {{ order.get_delivery_slot_display }}{% endif %}
+            </p>
+        </div>
+        <span class="status-badge" style="--status-color: {{ order.status_color }}">
+            {{ order.get_status_display }}
+        </span>
+    </div>
+
+    {% if cancellation %}
+        <div class="form-alert track-cancel" role="alert">
+            <p><strong>Заказ отменён</strong> {{ cancellation.created_at|date:"j E Y, H:i" }}.</p>
+            {% if cancellation.comment %}<p>{{ cancellation.comment }}</p>{% endif %}
+            <p>Если отмена произошла по ошибке — позвоните нам: {{ site.phone }}.</p>
+        </div>
+    {% endif %}
+
+    <div class="track-layout">
+        <div>
+            <ol class="track-timeline" aria-label="Этапы заказа">
+                {% for step in steps %}
+                    <li class="track-timeline__item{% if step.is_done %} is-done{% endif %}{% if step.is_current %} is-current{% endif %}">
+                        <span class="track-timeline__dot" aria-hidden="true"></span>
+                        <div class="track-timeline__body">
+                            <h2 class="track-timeline__title">{{ step.title }}</h2>
+                            <p class="track-timeline__desc">{{ step.description }}</p>
+                            {% if step.event %}
+                                <time class="track-timeline__time" datetime="{{ step.event.created_at|date:'c' }}">
+                                    {{ step.event.created_at|date:"j E, H:i" }}
+                                </time>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ol>
+
+            <div class="checkout-card track-items">
+                <h2 class="checkout-card__title">
+                    <span class="checkout-card__num" aria-hidden="true">🧾</span> Состав заказа
+                </h2>
+                <ul class="success-items">
+                    {% for item in order.items.all %}
+                        <li>
+                            <span class="success-items__name">{{ item.product_name }}
+                                <small>{{ item.quantity }} {{ item.unit }} × {{ item.price|money }}</small>
+                            </span>
+                            <span>{{ item.total_price|money }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <dl class="summary__rows">
+                    <div>
+                        <dt>Товары</dt>
+                        <dd>{{ order.subtotal|money }}</dd>
+                    </div>
+                    <div>
+                        <dt>Доставка</dt>
+                        <dd>{% if order.delivery_price %}{{ order.delivery_price|money }}{% else %}Бесплатно{% endif %}</dd>
+                    </div>
+                </dl>
+                <div class="summary__total">
+                    <span>Итого</span>
+                    <strong>{{ order.total|money }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <aside class="summary">
+            <h2 class="summary__title">Детали доставки</h2>
+            <dl class="success-details">
+                <div>
+                    <dt>Получение</dt>
+                    <dd>{{ order.get_delivery_method_display }}</dd>
+                </div>
+                {% if order.address %}
+                    <div>
+                        <dt>Адрес</dt>
+                        <dd>{{ order.address }}</dd>
+                    </div>
+                {% endif %}
+                <div>
+                    <dt>Время</dt>
+                    <dd>{{ order.get_delivery_slot_display|default:"—" }}</dd>
+                </div>
+                <div>
+                    <dt>Оплата</dt>
+                    <dd>{{ order.get_payment_method_display }}</dd>
+                </div>
+                <div>
+                    <dt>Получатель</dt>
+                    <dd>{{ order.customer_name }}</dd>
+                </div>
+                <div>
+                    <dt>Телефон</dt>
+                    <dd>{{ order.phone }}</dd>
+                </div>
+            </dl>
+
+            <p class="summary__hint">Статус обновляется, когда оператор меняет его в системе.</p>
+            <a class="btn btn--ghost btn--block" href="{% url 'orders:track' %}">Проверить другой заказ</a>
+            <a class="btn btn--primary btn--block" href="{% url 'catalog:list' %}">Продолжить покупки</a>
+        </aside>
+    </div>
+
+    <section class="track-history">
+        <h2 class="section__title">История заказа</h2>
+        {% if order.status_events.all %}
+            <ul class="track-history__list">
+                {% for event in order.status_events.all %}
+                    <li class="track-history__item">
+                        <span class="track-history__dot" style="--event-color: {{ event.status_color }}" aria-hidden="true"></span>
+                        <div class="track-history__body">
+                            <span class="track-history__status">{{ event.get_status_display }}</span>
+                            <span class="track-history__time">{{ event.created_at|date:"j E Y, H:i" }}</span>
+                            {% if event.comment %}<p class="track-history__comment">{{ event.comment }}</p>{% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="page-lead">История пока пуста — статус появится после обработки заказа.</p>
+        {% endif %}
+    </section>
+</section>
+{% endblock %}

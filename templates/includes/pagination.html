@@ -1,0 +1,17 @@
+{% if is_paginated %}
+<nav class="pagination" aria-label="Постраничная навигация">
+    {% if page_obj.has_previous %}
+        <a class="pagination__link" href="{% querystring page=page_obj.previous_page_number %}">← Назад</a>
+    {% endif %}
+    {% for number in page_obj.paginator.page_range %}
+        {% if number == page_obj.number %}
+            <span class="pagination__link is-active" aria-current="page">{{ number }}</span>
+        {% elif number >= page_obj.number|add:"-2" and number <= page_obj.number|add:"2" %}
+            <a class="pagination__link" href="{% querystring page=number %}">{{ number }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+        <a class="pagination__link" href="{% querystring page=page_obj.next_page_number %}">Вперёд →</a>
+    {% endif %}
+</nav>
+{% endif %}

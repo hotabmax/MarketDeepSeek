@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}Отслеживание заказа — {{ site.name }}{% endblock %}
+{% block description %}Узнайте статус доставки заказа {{ site.name }} по номеру заказа и телефону.{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'catalog:list' %}">Каталог</a>
+        <span aria-hidden="true">/</span>
+        <span>Отслеживание заказа</span>
+    </nav>
+
+    <div class="track-layout">
+        <div>
+            <h1 class="page-title">Отслеживание заказа</h1>
+            <p class="page-lead">Введите номер заказа и телефон, указанный при оформлении.
+                Покажем текущий статус, историю и состав заказа.</p>
+
+            <form class="checkout-card track-form" method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="form-alert" role="alert">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                {% include "includes/form_field.html" with field=form.number %}
+                {% include "includes/form_field.html" with field=form.phone %}
+                <button class="btn btn--primary btn--lg btn--block" type="submit">Показать статус</button>
+            </form>
+        </div>
+
+        <aside class="summary track-help">
+            <h2 class="summary__title">Где взять данные?</h2>
+            <ul class="track-help__list">
+                <li>
+                    <span class="track-help__num">1</span>
+                    <p><strong>Номер заказа</strong> вида <code>FM-20261020-A7K2Q</code>
+                        есть на странице подтверждения и в сообщении после оформления.</p>
+                </li>
+                <li>
+                    <span class="track-help__num">2</span>
+                    <p><strong>Телефон</strong> — тот же, что вы указывали в заказе.
+                        Формат не важен: номер можно ввести с пробелами или скобками.</p>
+                </li>
+            </ul>
+            <p class="summary__hint">
+                Номер и телефон нужны, чтобы статус заказа видели только вы.
+            </p>
+            <a class="btn btn--ghost btn--block" href="tel:{{ site.phone_link }}">Позвонить: {{ site.phone }}</a>
+        </aside>
+    </div>
+</section>
+{% endblock %}

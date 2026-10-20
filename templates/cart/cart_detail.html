@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}Корзина — {{ site.name }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    {% if rows %}
+        <nav class="breadcrumbs" aria-label="Хлебные крошки">
+            <a href="{% url 'catalog:list' %}">Каталог</a>
+            <span aria-hidden="true">/</span>
+            <span>Корзина</span>
+        </nav>
+
+        <h1 class="page-title">Корзина
+            <span class="page-title__note">{{ cart_total_quantity }} {{ cart_total_quantity|plural_ru:"товар,товара,товаров" }}</span>
+        </h1>
+
+        <div class="cart-layout">
+            <div class="cart-list">
+                {% for row in rows %}
+                    <article class="cart-row">
+                        <a class="cart-row__media" href="{{ row.product.get_absolute_url }}"
+                           style="--media-bg: {{ row.product.category.color }}"
+                           aria-label="{{ row.product.name }}">
+                            {% if row.product.image_url %}
+                                <img class="cart-row__photo" src="{{ row.product.image_url }}"
+                                     alt="{{ row.product.name }}" onerror="this.remove()">
+                            {% endif %}
+                            <span aria-hidden="true">{{ row.product.emoji }}</span>
+                        </a>
+
+                        <div class="cart-row__info">
+                            <a class="cart-row__name" href="{{ row.product.get_absolute_url }}">{{ row.product.name }}</a>
+                            <p class="cart-row__meta">{{ row.price|money }} / {{ row.product.unit }}</p>
+                            {% if row.stock_changed %}
+                                <p class="cart-row__warn">
+                                    В наличии только {{ row.product.stock }} {{ row.product.stock_unit }} — уменьшите количество.
+                                </p>
+                            {% endif %}
+
+                            <form class="cart-row__form" method="post"
+                                  action="{% url 'cart:update' row.product.pk %}">
+                                {% csrf_token %}
+                                <div class="stepper">
+                                    <button type="button" class="stepper__btn" data-step="-1"
+                                            aria-label="Уменьшить количество">−</button>
+                                    <input class="qty-input" type="number" name="quantity"
+                                           value="{{ row.quantity }}" min="0" max="{{ row.product.stock }}"
+                                           inputmode="numeric" aria-label="Количество «{{ row.product.name }}»">
+                                    <button type="button" class="stepper__btn" data-step="1"
+                                            aria-label="Увеличить количество">+</button>
+                                </div>
+                                <button class="btn btn--ghost btn--sm" type="submit">Обновить</button>
+                                <button class="link-danger" type="submit" name="remove" value="1">Удалить</button>
+                            </form>
+                        </div>
+
+                        <div class="cart-row__sum">
+                            <span class="cart-row__sum-value">{{ row.total_price|money }}</span>
+                            <span class="cart-row__sum-note">{{ row.quantity }} × {{ row.price|money }}</span>
+                        </div>
+                    </article>
+                {% endfor %}
+
+                <div class="cart-list__foot">
+                    <a class="section__link" href="{% url 'catalog:list' %}">← Продолжить покупки</a>
+                </div>
+            </div>
+
+            <aside class="summary">
+                <h2 class="summary__title">Ваш заказ</h2>
+                <dl class="summary__rows">
+                    <div>
+                        <dt>Товары ({{ rows|length }} {{ rows|length|plural_ru:"позиция,позиции,позиций" }})</dt>
+                        <dd>{{ subtotal|money }}</dd>
+                    </div>
+                    <div>
+                        <dt>Доставка курьером</dt>
+                        <dd>{% if delivery_price %}{{ delivery_price|money }}{% else %}Бесплатно{% endif %}</dd>
+                    </div>
+                </dl>
+
+                {% if not free_delivery_reached %}
+                    <div class="summary__progress" role="presentation">
+                        <span style="width: {% widthratio subtotal free_delivery_from 100 %}%"></span>
+                    </div>
+                    <p class="summary__hint">
+                        До бесплатной доставки не хватает <strong>{{ amount_to_free_delivery|money }}</strong>.
+                        Самовывоз всегда бесплатный.
+                    </p>
+                {% else %}
+                    <p class="summary__hint summary__hint--success">🎉 Доставка курьером бесплатна!</p>
+                {% endif %}
+
+                <div class="summary__total">
+                    <span>Итого</span>
+                    <strong>{{ total|money }}</strong>
+                </div>
+
+                <a class="btn btn--primary btn--block" href="{% url 'orders:checkout' %}">Оформить заказ</a>
+                <p class="summary__note">Оплата при получении или картой — выберете на следующем шаге.</p>
+            </aside>
+        </div>
+    {% else %}
+        <div class="empty-state empty-state--large">
+            <span class="empty-state__icon" aria-hidden="true">🛒</span>
+            <h1>Корзина пока пуста</h1>
+            <p>Добавьте продукты из каталога — и мы соберём заказ за пару минут.</p>
+            <a class="btn btn--primary btn--lg" href="{% url 'catalog:list' %}">Перейти к покупкам</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

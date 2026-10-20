@@ -1,0 +1,35 @@
+{% load shop_tags %}
+<article class="product-card">
+    <a class="product-card__media" href="{{ product.get_absolute_url }}"
+       style="--media-bg: {{ product.category.color }}" aria-label="{{ product.name }}">
+        {% if product.has_discount %}
+            <span class="badge badge--sale">−{{ product.discount_percent }}%</span>
+        {% endif %}
+        {% if product.image_url %}
+            <img class="product-card__photo" src="{{ product.image_url }}" alt="{{ product.name }}"
+                 loading="lazy" onerror="this.remove()">
+        {% endif %}
+        <span class="product-card__emoji" aria-hidden="true">{{ product.emoji }}</span>
+    </a>
+    <div class="product-card__body">
+        <span class="product-card__category">{{ product.category.name }}</span>
+        <a class="product-card__name" href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+        <span class="product-card__unit">{{ product.unit }}</span>
+        <div class="product-card__bottom">
+            <div class="price">
+                <span class="price__current">{{ product.price|money }}</span>
+                {% if product.has_discount %}
+                    <s class="price__old">{{ product.old_price|money }}</s>
+                {% endif %}
+            </div>
+            <form class="product-card__form" method="post" action="{% url 'cart:add' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.pk }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn btn--primary btn--sm" type="submit"
+                        aria-label="Добавить «{{ product.name }}» в корзину">В корзину</button>
+            </form>
+        </div>
+    </div>
+</article>

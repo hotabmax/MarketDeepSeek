@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}
+    {% if current_category %}{{ current_category.name }} — {% elif query %}Поиск «{{ query }}» — {% endif %}Каталог — {{ site.name }}
+{% endblock %}
+
+{% block content %}
+{% if is_home %}
+<section class="hero">
+    <div class="container hero__inner">
+        <div class="hero__text">
+            <span class="hero__eyebrow">🚚 Доставка по Самаре за 2 часа</span>
+            <h1>Свежие продукты<br>каждый день</h1>
+            <p class="hero__lead">Собираем заказ из ближайшего магазина и привозим к вашей двери.
+                Овощи, молочное, мясо, хлеб и бакалея — без очередей и поездок.</p>
+            <div class="hero__actions">
+                <a class="btn btn--primary btn--lg" href="#catalog">Начать покупки</a>
+                <a class="btn btn--ghost btn--lg" href="{% url 'delivery' %}">Условия доставки</a>
+            </div>
+            <ul class="hero__facts">
+                <li><strong>2 ч</strong><span>среднее время доставки</span></li>
+                <li><strong>0 ₽</strong><span>от {{ site.free_delivery_from|money }}</span></li>
+                <li><strong>24 ч</strong><span>возврат без вопросов</span></li>
+            </ul>
+        </div>
+        <div class="hero__art" aria-hidden="true">
+            <span class="hero__blob hero__blob--1">🍅</span>
+            <span class="hero__blob hero__blob--2">🥑</span>
+            <span class="hero__blob hero__blob--3">🥖</span>
+            <span class="hero__blob hero__blob--4">🥛</span>
+            <span class="hero__blob hero__blob--5">🍓</span>
+        </div>
+    </div>
+</section>
+
+<section class="container section">
+    <div class="section__head">
+        <h2 class="section__title">Разделы магазина</h2>
+        <span class="section__note">{{ categories|length }} {{ categories|length|plural_ru:"категория,категории,категорий" }}</span>
+    </div>
+    <div class="category-grid">
+        {% for category in categories %}
+            <a class="category-tile" href="{{ category.get_absolute_url }}" style="--media-bg: {{ category.color }}">
+                <span class="category-tile__icon" aria-hidden="true">{{ category.icon }}</span>
+                <span class="category-tile__name">{{ category.name }}</span>
+                <span class="category-tile__desc">{{ category.description|default:"Свежая полка"|truncatechars:34 }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+{% if featured_products %}
+<section class="container section">
+    <div class="section__head">
+        <h2 class="section__title">Хиты недели</h2>
+        <span class="section__note">Выбор наших покупателей</span>
+    </div>
+    <div class="product-grid">
+        {% for product in featured_products %}
+            {% include "includes/product_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endif %}
+
+<section class="container section" id="catalog">
+    <div class="catalog__head">
+        <div>
+            {% if is_home %}
+                <h2 class="section__title">Все продукты</h2>
+            {% else %}
+                <h1 class="section__title">
+                    {% if current_category %}{{ current_category.icon }} {{ current_category.name }}
+                    {% elif query %}Поиск: «{{ query }}»
+                    {% else %}Все продукты{% endif %}
+                </h1>
+            {% endif %}
+            <p class="catalog__count">
+                {{ page_obj.paginator.count }} {{ page_obj.paginator.count|plural_ru:"товар,товара,товаров" }}
+                {% if current_category and current_category.description %} · {{ current_category.description }}{% endif %}
+            </p>
+        </div>
+
+        <form class="sort" method="get">
+            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+            <label class="sort__label" for="sort">Сортировка</label>
+            <select class="input input--sm" name="sort" id="sort" data-autosubmit>
+                {% for value, label in sort_labels %}
+                    <option value="{{ value }}"{% if sort == value %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+                {% include "includes/product_card.html" %}
+            {% endfor %}
+        </div>
+        {% include "includes/pagination.html" %}
+    {% else %}
+        <div class="empty-state">
+            <span class="empty-state__icon" aria-hidden="true">🧺</span>
+            <h3>Ничего не нашлось</h3>
+            <p>
+                {% if query %}
+                    По запросу «{{ query }}» товаров нет. Попробуйте другое слово или посмотрите весь каталог.
+                {% else %}
+                    В этом разделе пока нет товаров — загляните позже или посмотрите другие разделы.
+                {% endif %}
+            </p>
+            <a class="btn btn--primary" href="{% url 'catalog:list' %}">Смотреть весь каталог</a>
+        </div>
+    {% endif %}
+</section>
+
+<section class="container section">
+    <div class="advantages">
+        <article class="advantage">
+            <span class="advantage__icon" aria-hidden="true">🚚</span>
+            <h3>Доставка за 2 часа</h3>
+            <p>Привезём заказ на дом или в офис. Бесплатно при сумме от {{ site.free_delivery_from|money }}.</p>
+        </article>
+        <article class="advantage">
+            <span class="advantage__icon" aria-hidden="true">🥬</span>
+            <h3>Привезём свежее</h3>
+            <p>Если продукт не понравился — вернём деньги в течение 24 часов без лишних вопросов.</p>
+        </article>
+        <article class="advantage">
+            <span class="advantage__icon" aria-hidden="true">💳</span>
+            <h3>Как удобно платить</h3>
+            <p>Картой онлайн, курьеру или наличными при получении — выбираете вы.</p>
+        </article>
+        <article class="advantage">
+            <span class="advantage__icon" aria-hidden="true">📞</span>
+            <h3>Живая поддержка</h3>
+            <p>Позвоните по номеру {{ site.phone }} — поможем собрать заказ ежедневно с 9:00 до 22:00.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

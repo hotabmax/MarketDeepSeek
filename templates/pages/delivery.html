@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}Доставка и оплата — {{ site.name }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'catalog:list' %}">Каталог</a>
+        <span aria-hidden="true">/</span>
+        <span>Доставка и оплата</span>
+    </nav>
+
+    <h1 class="page-title">Доставка и оплата</h1>
+    <p class="page-lead">Доставляем продукты по Самаре ежедневно с 9:00 до 22:00. Заказывайте до 20:00 —
+        привезём в тот же день.</p>
+
+    <div class="info-grid">
+        <article class="info-card">
+            <h2>🚚 Курьером</h2>
+            <ul class="info-list">
+                <li>Стоимость — {{ site.delivery_price|money }}, бесплатно при заказе от {{ site.free_delivery_from|money }}.</li>
+                <li>Среднее время доставки — 2 часа.</li>
+                <li>Можно выбрать интервал: 10:00–14:00, 14:00–18:00, 18:00–22:00.</li>
+                <li>Курьер позвонит за 15 минут до приезда.</li>
+            </ul>
+        </article>
+        <article class="info-card">
+            <h2>🏬 Самовывоз</h2>
+            <ul class="info-list">
+                <li>Бесплатно, без минимальной суммы.</li>
+                <li>Адрес: Самара, ул. Ново-Садовая, 106.</li>
+                <li>Собираем заказ за 30 минут.</li>
+                <li>Заказ хранится в пункте выдачи 24 часа.</li>
+            </ul>
+        </article>
+        <article class="info-card">
+            <h2>💳 Оплата</h2>
+            <ul class="info-list">
+                <li>Наличными или картой при получении.</li>
+                <li>Картой курьеру — через терминал.</li>
+                <li>Онлайн-оплата картой при оформлении заказа.</li>
+                <li>Чек приходит на e-mail, если вы его указали.</li>
+            </ul>
+        </article>
+        <article class="info-card">
+            <h2>↩️ Возврат и качество</h2>
+            <ul class="info-list">
+                <li>Проверяйте продукты при курьере.</li>
+                <li>Если что-то не понравилось — вернём деньги в течение 24 часов.</li>
+                <li>Скоропортящиеся товары принимаем обратно при сохранении упаковки.</li>
+                <li>Поддержка: {{ site.phone }}.</li>
+            </ul>
+        </article>
+    </div>
+
+    <div class="cta-band">
+        <div>
+            <h2>Готовы оформить заказ?</h2>
+            <p>Соберите корзину — остальное мы возьмём на себя.</p>
+        </div>
+        <a class="btn btn--primary btn--lg" href="{% url 'catalog:list' %}">Перейти в каталог</a>
+    </div>
+</section>
+{% endblock %}

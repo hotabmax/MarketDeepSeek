@@ -1,0 +1,115 @@
+{% load static shop_tags %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Свежие продукты с доставкой — {{ site.name }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ site.name }} — продуктовый интернет-магазин с доставкой по Самаре за 2 часа. Овощи, фрукты, молочное, мясо, хлеб и бакалея.{% endblock %}">
+    <meta name="theme-color" content="#188a46">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥕</text></svg>">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<a class="skip-link" href="#main">Перейти к содержимому</a>
+
+<header class="header">
+    <div class="container header__top">
+        <a class="logo" href="{% url 'catalog:list' %}">
+            <span class="logo__mark" aria-hidden="true">🥕</span>
+            <span class="logo__text">Фреш<strong>Маркет</strong></span>
+        </a>
+
+        <form class="search" action="{% url 'catalog:list' %}" method="get" role="search">
+            <label class="visually-hidden" for="search-q">Поиск по каталогу</label>
+            <input class="search__input" id="search-q" type="search" name="q"
+                   value="{{ query|default:'' }}" placeholder="Найти продукт — например, молоко">
+            <button class="search__button" type="submit">
+                <span aria-hidden="true">🔍</span><span class="search__button-text">Найти</span>
+            </button>
+        </form>
+
+        <div class="header__actions">
+            <a class="header__phone" href="tel:{{ site.phone_link }}">
+                <span class="header__phone-icon" aria-hidden="true">☎</span>{{ site.phone }}
+            </a>
+            <a class="track-link" href="{% url 'orders:track' %}" aria-label="Отследить заказ">
+                <span class="track-link__icon" aria-hidden="true">🚚</span>
+                <span class="track-link__label">Отследить заказ</span>
+            </a>
+            <a class="cart-link" href="{% url 'cart:detail' %}">
+                <span class="cart-link__icon" aria-hidden="true">🛒</span>
+                <span class="cart-link__label">Корзина</span>
+                {% if cart_total_quantity %}
+                    <span class="cart-link__badge" aria-label="Товаров в корзине: {{ cart_total_quantity }}">{{ cart_total_quantity }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <nav class="catnav" aria-label="Категории товаров">
+        <div class="container catnav__inner">
+            <a class="catnav__link{% if not current_category %} is-active{% endif %}"
+               href="{% url 'catalog:list' %}">Все продукты</a>
+            {% for category in nav_categories %}
+                <a class="catnav__link{% if current_category == category %} is-active{% endif %}"
+                   href="{{ category.get_absolute_url }}">
+                    <span aria-hidden="true">{{ category.icon }}</span> {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </nav>
+</header>
+
+{% include "includes/messages.html" %}
+
+<main class="main" id="main">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <div class="container footer__grid">
+        <div class="footer__brand">
+            <span class="logo logo--footer">
+                <span class="logo__mark" aria-hidden="true">🥕</span>
+                <span class="logo__text">Фреш<strong>Маркет</strong></span>
+            </span>
+            <p>Продукты из ближайшего магазина — к вашей двери за два часа. Работаем ежедневно с 9:00 до 22:00.</p>
+            <a class="footer__phone" href="tel:{{ site.phone_link }}">{{ site.phone }}</a>
+        </div>
+        <div class="footer__col">
+            <h3>Магазин</h3>
+            <ul>
+                <li><a href="{% url 'catalog:list' %}">Каталог</a></li>
+                <li><a href="{% url 'delivery' %}">Доставка и оплата</a></li>
+                <li><a href="{% url 'contacts' %}">Контакты</a></li>
+                <li><a href="{% url 'admin:index' %}">Панель управления</a></li>
+            </ul>
+        </div>
+        <div class="footer__col">
+            <h3>Категории</h3>
+            <ul>
+                {% for category in nav_categories|slice:":5" %}
+                    <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="footer__col">
+            <h3>Покупателям</h3>
+            <ul>
+                <li>Доставка от {{ site.free_delivery_from|money }}</li>
+                <li>Оплата картой и наличными</li>
+                <li>Возврат в течение 24 часов</li>
+                <li><a href="{% url 'orders:checkout' %}">Оформить заказ</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="container footer__bottom">
+        <span>© {% now "Y" %} {{ site.name }}. Демонстрационный проект на Django.</span>
+        <span>Сделано с заботой о свежести 🥬</span>
+    </div>
+</footer>
+
+<script src="{% static 'js/app.js' %}" defer></script>
+</body>
+</html>

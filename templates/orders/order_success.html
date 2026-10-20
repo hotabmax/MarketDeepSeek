@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load shop_tags %}
+
+{% block title %}Заказ {{ order.number }} оформлен — {{ site.name }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <ol class="steps" aria-label="Этапы оформления">
+        <li class="steps__item is-done">Корзина</li>
+        <li class="steps__item is-done">Данные и доставка</li>
+        <li class="steps__item is-active">Готово</li>
+    </ol>
+
+    <div class="success">
+        <div class="success__icon" aria-hidden="true">✓</div>
+        <h1>Заказ оформлен!</h1>
+        <p class="success__lead">
+            Номер заказа <strong>{{ order.number }}</strong>. Мы позвоним по номеру {{ order.phone }},
+            чтобы подтвердить состав и время доставки.
+        </p>
+
+        <div class="success__grid">
+            <div class="success-card">
+                <h2>Состав заказа</h2>
+                <ul class="success-items">
+                    {% for item in order.items.all %}
+                        <li>
+                            <span class="success-items__name">{{ item.product_name }}
+                                <small>{{ item.quantity }} {{ item.unit }} × {{ item.price|money }}</small>
+                            </span>
+                            <span>{{ item.total_price|money }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <dl class="summary__rows">
+                    <div><dt>Товары</dt><dd>{{ order.subtotal|money }}</dd></div>
+                    <div>
+                        <dt>Доставка</dt>
+                        <dd>{% if order.delivery_price %}{{ order.delivery_price|money }}{% else %}Бесплатно{% endif %}</dd>
+                    </div>
+                </dl>
+                <div class="summary__total">
+                    <span>Итого</span>
+                    <strong>{{ order.total|money }}</strong>
+                </div>
+            </div>
+
+            <div class="success-card">
+                <h2>Доставка и оплата</h2>
+                <dl class="success-details">
+                    <div>
+                        <dt>Получение</dt>
+                        <dd>{{ order.get_delivery_method_display }}{% if order.delivery_slot %} · {{ order.get_delivery_slot_display }}{% endif %}</dd>
+                    </div>
+                    {% if order.address %}
+                        <div><dt>Адрес</dt><dd>{{ order.address }}</dd></div>
+                    {% endif %}
+                    <div><dt>Оплата</dt><dd>{{ order.get_payment_method_display }}</dd></div>
+                    <div><dt>Покупатель</dt><dd>{{ order.customer_name }}, {{ order.phone }}</dd></div>
+                    <div><dt>Оформлен</dt><dd>{{ order.created_at|date:"j E Y, H:i" }}</dd></div>
+                    {% if order.comment %}
+                        <div><dt>Комментарий</dt><dd>{{ order.comment }}</dd></div>
+                    {% endif %}
+                </dl>
+                <p class="success-card__note">
+                    Вопросы по заказу — по телефону <a href="tel:{{ site.phone_link }}">{{ site.phone }}</a>.
+                </p>
+            </div>
+        </div>
+
+        <div class="success__actions">
+            <a class="btn btn--primary" href="{% url 'orders:track_detail' order.number %}">Отследить заказ</a>
+            <a class="btn btn--ghost" href="{% url 'catalog:list' %}">Продолжить покупки</a>
+            <a class="btn btn--ghost" href="{% url 'delivery' %}">Как проходит доставка</a>
+        </div>
+        <p class="success__track-note">
+            Отслеживать заказ можно по номеру <strong>{{ order.number }}</strong>
+            и телефону, указанному при оформлении.
+        </p>
+    </div>
+</section>
+{% endblock %}

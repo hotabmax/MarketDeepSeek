@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты — {{ site.name }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'catalog:list' %}">Каталог</a>
+        <span aria-hidden="true">/</span>
+        <span>Контакты</span>
+    </nav>
+
+    <h1 class="page-title">Контакты</h1>
+    <p class="page-lead">Мы на связи каждый день с 9:00 до 22:00. Звоните, пишите — поможем с заказом,
+        доставкой и возвратом.</p>
+
+    <div class="info-grid">
+        <article class="info-card">
+            <h2>📞 Телефон</h2>
+            <ul class="info-list">
+                <li><a href="tel:{{ site.phone_link }}">{{ site.phone }}</a> — служба доставки.</li>
+                <li>Ежедневно с 9:00 до 22:00.</li>
+            </ul>
+        </article>
+        <article class="info-card">
+            <h2>✉️ Почта</h2>
+            <ul class="info-list">
+                <li><a href="mailto:hello@freshmarket.example">hello@freshmarket.example</a></li>
+                <li>Ответим в течение рабочего дня.</li>
+            </ul>
+        </article>
+        <article class="info-card">
+            <h2>🏬 Пункт самовывоза</h2>
+            <ul class="info-list">
+                <li>Самара, ул. Ново-Садовая, 106.</li>
+                <li>Ежедневно с 9:00 до 21:00.</li>
+            </ul>
+        </article>
+        <article class="info-card">
+            <h2>🧾 Реквизиты</h2>
+            <ul class="info-list">
+                <li>ООО «ФрешМаркет»</li>
+                <li>ИНН 6316000000 · ОГРН 1156316000000</li>
+                <li>Самара, ул. Ново-Садовая, 106, офис 12</li>
+            </ul>
+        </article>
+    </div>
+
+    <div class="cta-band">
+        <div>
+            <h2>Есть вопрос по заказу?</h2>
+            <p>Позвоните — оператор сразу подскажет статус доставки.</p>
+        </div>
+        <a class="btn btn--primary btn--lg" href="tel:{{ site.phone_link }}">{{ site.phone }}</a>
+    </div>
+</section>
+{% endblock %}

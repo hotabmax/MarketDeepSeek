@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load l10n shop_tags %}
+
+{% block title %}Оформление заказа — {{ site.name }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+    <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="{% url 'catalog:list' %}">Каталог</a>
+        <span aria-hidden="true">/</span>
+        <a href="{% url 'cart:detail' %}">Корзина</a>
+        <span aria-hidden="true">/</span>
+        <span>Оформление</span>
+    </nav>
+
+    <h1 class="page-title">Оформление заказа</h1>
+
+    <ol class="steps" aria-label="Этапы оформления">
+        <li class="steps__item is-done">Корзина</li>
+        <li class="steps__item is-active">Данные и доставка</li>
+        <li class="steps__item">Готово</li>
+    </ol>
+
+    <div class="checkout-layout">
+        <form class="checkout-form" method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-alert" role="alert">
+                    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+
+            <fieldset class="checkout-card">
+                <legend class="checkout-card__title"><span class="checkout-card__num">1</span> Контактные данные</legend>
+                <div class="form-grid">
+                    {% include "includes/form_field.html" with field=form.customer_name %}
+                    {% include "includes/form_field.html" with field=form.phone %}
+                    {% include "includes/form_field.html" with field=form.email %}
+                </div>
+            </fieldset>
+
+            <fieldset class="checkout-card">
+                <legend class="checkout-card__title"><span class="checkout-card__num">2</span> Получение заказа</legend>
+
+                <div class="form-field">{{ form.delivery_method.label_tag }}</div>
+                {{ form.delivery_method }}
+                {% for error in form.delivery_method.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+
+                <div class="checkout-address" data-address-block>
+                    {% include "includes/form_field.html" with field=form.address %}
+                    <p class="checkout-address__hint">Укажите город, улицу, дом, квартиру и этаж — курьер позвонит перед приездом.</p>
+                </div>
+                <div class="pickup-note" data-pickup-block hidden>
+                    <span aria-hidden="true">🏬</span>
+                    <div>
+                        <strong>Пункт самовывоза</strong>
+                        <p>{{ pickup_address }}</p>
+                    </div>
+                </div>
+
+                {% include "includes/form_field.html" with field=form.delivery_slot %}
+            </fieldset>
+
+            <fieldset class="checkout-card">
+                <legend class="checkout-card__title"><span class="checkout-card__num">3</span> Оплата</legend>
+                <div class="form-field">{{ form.payment_method.label_tag }}</div>
+                {{ form.payment_method }}
+                {% for error in form.payment_method.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+                {% include "includes/form_field.html" with field=form.comment %}
+            </fieldset>
+
+            <div class="checkout-agree">
+                {% include "includes/form_field.html" with field=form.agree %}
+                <p class="checkout-agree__note">Данные нужны только для доставки заказа и не передаются третьим лицам.</p>
+            </div>
+
+            <button class="btn btn--primary btn--lg btn--block" type="submit">
+                Подтвердить заказ · <span data-checkout-total>{{ total|money }}</span>
+            </button>
+        </form>
+
+        <aside class="summary summary--checkout"
+               data-checkout-summary
+               data-subtotal="{{ subtotal|unlocalize }}"
+               data-delivery-price="{{ delivery_tariff|unlocalize }}"
+               data-free-from="{{ free_delivery_from|unlocalize }}">
+            <h2 class="summary__title">Ваш заказ</h2>
+
+            <ul class="summary__items">
+                {% for row in rows %}
+                    <li class="summary__item">
+                        <span class="summary__item-media" style="--media-bg: {{ row.product.category.color }}"
+                              aria-hidden="true">{{ row.product.emoji }}</span>
+                        <span class="summary__item-name">{{ row.product.name }}
+                            <small>{{ row.quantity }} × {{ row.price|money }}</small>
+                        </span>
+                        <span class="summary__item-sum">{{ row.total_price|money }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <dl class="summary__rows">
+                <div>
+                    <dt>Товары</dt>
+                    <dd>{{ subtotal|money }}</dd>
+                </div>
+                <div>
+                    <dt>Доставка <span data-delivery-label>(курьером)</span></dt>
+                    <dd data-delivery-value>
+                        {% if delivery_price %}{{ delivery_price|money }}{% else %}Бесплатно{% endif %}
+                    </dd>
+                </div>
+            </dl>
+
+            {% if subtotal < free_delivery_from %}
+                <p class="summary__hint">
+                    Бесплатная доставка от {{ free_delivery_from|money }}. Самовывоз — всегда бесплатно.
+                </p>
+            {% endif %}
+
+            <div class="summary__total">
+                <span>Итого</span>
+                <strong data-total-value>{{ total|money }}</strong>
+            </div>
+
+            <ul class="summary__checks">
+                <li>Свежие продукты и контроль качества</li>
+                <li>Возврат в течение 24 часов</li>
+                <li>Поддержка: {{ site.phone }}</li>
+            </ul>
+        </aside>
+    </div>
+</section>
+{% endblock %}
